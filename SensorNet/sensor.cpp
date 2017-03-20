@@ -47,6 +47,6 @@ float Sensor::area()
 
 void operator ++(Sensor s)
 {
-    if (s.m_active)
+    if (s.active())
         s.m_energy--;
 }
