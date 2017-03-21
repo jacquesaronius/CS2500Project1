@@ -7,4 +7,7 @@ ApplicationWindow {
     width: 640
     height: 480
     title: qsTr("Sensor Net")
+    Loader {
+        source: "Page1.qml"
+    }
 }

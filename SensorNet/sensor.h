@@ -18,12 +18,14 @@ class Sensor
         static const short MIN_X = 0; // Min coordinate on X axis
         static const short MIN_Y = 0; // Min coordinate on Y axis
         static const short RADIUS = 5; // Radius of sensor coverage
+        static Sensor * create(const short n, bool active = false);
         short x() const;
         short y() const;
         short energy() const;
         bool active();
         void activate();
         void deactivate();
+        void toggle();
         float area();
         friend void operator ++(Sensor);
         Sensor():m_energy(Sensor::INITIAL_ENERGY),m_active(false)

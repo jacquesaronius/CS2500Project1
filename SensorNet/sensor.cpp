@@ -1,5 +1,16 @@
 #include "sensor.h"
 
+Sensor * Sensor::create(const short n, bool active)
+{
+    Sensor * sensors = new Sensor [n];
+    if (active)
+        for (int i = 0; i < n; i++)
+        {
+            sensors[i].activate();
+        }
+    return sensors;
+}
+
 short Sensor::x() const
 {
     return m_x;
@@ -31,6 +42,11 @@ void Sensor::activate()
 void Sensor::deactivate()
 {
     m_active = false;
+}
+
+void Sensor::toggle()
+{
+    active() ? deactivate() : activate();
 }
 
 void Sensor::init()
