@@ -2,7 +2,8 @@
 #define SENSOR_H
 #include <cstdlib>
 #include <cmath>
-class Sensor
+#include <QObject>
+class Sensor : QObject
 {
     short m_x; // X position of sensor
     short m_y; // Y position of sensor
