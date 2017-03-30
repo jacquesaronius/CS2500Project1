@@ -3,7 +3,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <QObject>
-class Sensor : QObject
+class Sensor : public QObject
 {
     short m_x; // X position of sensor
     short m_y; // Y position of sensor
@@ -11,7 +11,7 @@ class Sensor : QObject
     bool m_active; // Active sensors status
     void init();
 
-
+    Q_OBJECT
     public:
         static const short INITIAL_ENERGY = 300;  //Initial energy of sensor
         static const short MAX_X = 250; // Max coordinate on X axis
@@ -29,7 +29,10 @@ class Sensor : QObject
         void toggle();
         float area();
         friend void operator ++(Sensor);
-        Sensor():m_energy(Sensor::INITIAL_ENERGY),m_active(false)
+        explicit Sensor(QObject *parent = 0):
+            QObject(parent),
+            m_energy(Sensor::INITIAL_ENERGY),
+            m_active(false)
         {
             init();
         }

@@ -19,6 +19,7 @@ Page1Form {
         }
 
     }
+
     Component.onCompleted: {
         console.log("Completed")
         myCanvas.requestPaint()
