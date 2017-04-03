@@ -23,21 +23,39 @@ Item {
 
     Button {
         id: btnCreate
-        x: 0
+        x: 400
         width: 100
         text: qsTr("Create sensor net")
+        spacing: -2
         anchors.top: parent.top
         anchors.topMargin: 20
         opacity: 0.9
         anchors.right: parent.right
-        anchors.rightMargin: 20
+        anchors.rightMargin: 140
     }
 
     SpinBox {
         id: spinBox
+        stepSize: 50
+        to: 500
+        from: 50
+        value: 50
         anchors.left: parent.left
         anchors.leftMargin: 40
         anchors.top: parent.top
         anchors.topMargin: 20
     }
-}
+
+    Button {
+        id: btnRun
+        x: 532
+        y: 20
+        text: qsTr("Run Simulation")
+        spacing: -3
+    }
+
+    Connections {
+        target: btnCreate
+        onClicked: controller.create(spinBox.value)
+    }
+ }

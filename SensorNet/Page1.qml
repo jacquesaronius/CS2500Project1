@@ -14,8 +14,6 @@ Page1Form {
             ctx.strokeStyle = "black"
             ctx.rect(0,0,252,252)
             ctx.stroke();
-
-
         }
 
     }
@@ -24,4 +22,15 @@ Page1Form {
         console.log("Completed")
         myCanvas.requestPaint()
     }
+
+    signal create(int n);
+
+    Connections {
+        target: controller
+        onUpdate: {
+            myCanvas.requestPaint()
+        }
+    }
+
+
 }
