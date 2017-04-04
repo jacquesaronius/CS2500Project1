@@ -18,6 +18,7 @@ void SensorController::create(int n)
     {
         Sensor * t = new Sensor();
         sensors.push_back(t);
+        i++;
     }
 
     update();

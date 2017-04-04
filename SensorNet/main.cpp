@@ -11,12 +11,14 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
     QQmlApplicationEngine engine;
     SensorController controller;
+    QObject * page1;
 
 
     srand(time(NULL));
     engine.rootContext()->setContextProperty("controller", &controller);
     engine.load(QUrl(QLatin1String("qrc:/main.qml")));
-    QObject::connect(engine.rootObjects()[0],
+    page1 = engine.rootObjects()[0]->findChild<QObject *>("page1");
+    QObject::connect(page1,
                      SIGNAL(create(int)),
                      &controller,
                      SLOT(create(int)));

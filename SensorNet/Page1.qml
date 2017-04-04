@@ -17,6 +17,7 @@ Page1Form {
         }
 
     }
+    objectName: "page1"
 
     Component.onCompleted: {
         console.log("Completed")
