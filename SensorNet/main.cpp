@@ -12,6 +12,7 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine engine;
     SensorController controller;
     QObject * page1;
+    qRegisterMetaType<Sensor *>("Sensor *");
 
 
     srand(time(NULL));

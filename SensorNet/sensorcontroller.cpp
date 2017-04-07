@@ -8,6 +8,7 @@ SensorController::SensorController(QObject *parent) : QObject(parent)
 void SensorController::create(int n)
 {
     int i = 0;
+
     while (!sensors.empty())
     {
         Sensor * t = sensors.back();
@@ -29,7 +30,7 @@ Sensor * SensorController::get_sensor(int n)
     return sensors.at(n);
 }
 
-int SensorController::Count() const
+int SensorController::count() const
 {
     return sensors.size();
 }

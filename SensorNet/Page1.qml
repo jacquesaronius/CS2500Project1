@@ -8,12 +8,32 @@ Page1Form {
         width: 252
         height: 252
         onPaint: {
+            const DILATION = 4;
             console.log("Onpaint got called!")
             var ctx = getContext("2d")
+            var count = controller.count;
+            ctx.reset();
             ctx.lineWidth = 1
             ctx.strokeStyle = "black"
             ctx.rect(0,0,252,252)
             ctx.stroke();
+            ctx.save();
+
+            for(var i = 0; i < count; i++) {
+                var sensor = controller.get_sensor(i)
+                var x = sensor.x * DILATION;
+                var y = sensor.y * DILATION;
+                ctx.restore();
+                ctx.beginPath();
+                ctx.strokeStyle = "red";
+                ctx.moveTo(x - 4, y);
+                ctx.lineTo(x + 4, y);
+
+                ctx.moveTo(x, y - 4);
+                ctx.lineTo(x, y + 4);
+                ctx.stroke();
+            }
+
         }
 
     }

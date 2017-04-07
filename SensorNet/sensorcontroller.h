@@ -8,13 +8,14 @@
 class SensorController : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(int count READ count)
 
 std::vector<Sensor *> sensors;
 public:
     explicit SensorController(QObject *parent = 0);
     ~SensorController() { this->create(0); }
-    Sensor * get_sensor(int n);
-    int Count() const;
+    Q_INVOKABLE Sensor * get_sensor(int n);
+    int count() const;
 signals:
     void update();
 public slots:
