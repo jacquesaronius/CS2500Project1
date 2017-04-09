@@ -8,7 +8,9 @@ Page1Form {
         width: 252
         height: 252
         onPaint: {
-            const DILATION = 4;
+
+
+            const DILATION = 5;
             console.log("Onpaint got called!")
             var ctx = getContext("2d")
             var count = controller.count;
