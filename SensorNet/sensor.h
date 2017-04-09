@@ -45,13 +45,10 @@
                 init();
             }
 
-<<<<<<< HEAD
-=======
             ~Sensor()
             {
                 qDebug("Sensor object destroyed");
             }
->>>>>>> SensorModel
 
     };
 
