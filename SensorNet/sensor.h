@@ -11,6 +11,7 @@
         bool m_active; // Active sensors status
         void init();
 
+
         Q_OBJECT
         Q_PROPERTY(short x READ x)
         Q_PROPERTY(short y READ y)
@@ -24,10 +25,13 @@
             static const short MIN_X = 0; // Min coordinate on X axis
             static const short MIN_Y = 0; // Min coordinate on Y axis
             static const short RADIUS = 5; // Radius of sensor coverage
+            std::vector<int> overlap; // vector for overlaps
+
             short x() const;
             short y() const;
             short energy() const;
             bool active();
+            void check_coverage();
             Q_INVOKABLE void activate();
             Q_INVOKABLE void deactivate();
             Q_INVOKABLE void toggle();
@@ -40,6 +44,7 @@
             {
                 init();
             }
+
 
     };
 

@@ -16,10 +16,12 @@ public:
     ~SensorController() { this->create(0); }
     Q_INVOKABLE Sensor * get_sensor(int n);
     int count() const;
+    void add_overlap(int n);
 signals:
     void update();
 public slots:
     void create(int n);
 };
+
 
 #endif // SENSORCONTROLLER_H
