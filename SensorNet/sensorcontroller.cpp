@@ -17,7 +17,7 @@ void SensorController::create(int n)
     }
     while (i < n)
     {
-        Sensor * t = new Sensor();
+        Sensor * t = new Sensor(this);
         sensors.push_back(t);
         i++;
     }

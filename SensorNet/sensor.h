@@ -41,6 +41,11 @@
                 init();
             }
 
+            ~Sensor()
+            {
+                qDebug("Sensor object destroyed");
+            }
+
     };
 
     #endif // SENSOR_H
