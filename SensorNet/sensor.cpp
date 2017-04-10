@@ -56,3 +56,7 @@ void operator ++(Sensor s)
     if (s.active())
         s.m_energy--;
 }
+
+void Sensor::add_overlap(Sensor* ovb){
+  overlap.push_back(ovb);
+}

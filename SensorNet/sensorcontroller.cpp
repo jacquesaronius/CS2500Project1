@@ -35,7 +35,8 @@ int SensorController::count() const
     return sensors.size();
 }
 
-void SensorController::add_overlap(int n)
+void SensorController::add_overlap(Sensor* ov, Sensor* ovb)
 {
-  //Sensor::overlap.push_back(n);
+  ov->add_overlap(ovb);
+  ovb->add_overlap(ov);
 }

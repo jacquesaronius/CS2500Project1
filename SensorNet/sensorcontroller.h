@@ -16,7 +16,7 @@ public:
     ~SensorController() { this->create(0); }
     Q_INVOKABLE Sensor * get_sensor(int n);
     int count() const;
-    void add_overlap(int n);
+    void add_overlap(Sensor* ov, Sensor* ovb);
 signals:
     void update();
 public slots:

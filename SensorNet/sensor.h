@@ -10,6 +10,8 @@
         short m_energy; // Current energy reserve
         bool m_active; // Active sensors status
         void init();
+        std::vector<Sensor *> overlap; // vector for overlaps
+
 
 
         Q_OBJECT
@@ -25,7 +27,7 @@
             static const short MIN_X = 0; // Min coordinate on X axis
             static const short MIN_Y = 0; // Min coordinate on Y axis
             static const short RADIUS = 5; // Radius of sensor coverage
-            std::vector<int> overlap; // vector for overlaps
+            void add_overlap(Sensor* ovb);
 
             short x() const;
             short y() const;
