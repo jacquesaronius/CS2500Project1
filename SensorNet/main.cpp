@@ -17,6 +17,7 @@ int main(int argc, char *argv[])
 
     srand(time(NULL));
     engine.rootContext()->setContextProperty("controller", &controller);
+    engine.rootContext()->setContextProperty("RADIUS", Sensor::RADIUS);
     engine.load(QUrl(QLatin1String("qrc:/main.qml")));
     page1 = engine.rootObjects()[0]->findChild<QObject *>("page1");
     QObject::connect(page1,

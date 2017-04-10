@@ -5,6 +5,8 @@
 #include <vector>
 #include <cmath>
 #include "sensor.h"
+#include "intersectionpoint.h"
+#include "boundingbox.h"
 
 class SensorController : public QObject
 {
@@ -12,6 +14,10 @@ class SensorController : public QObject
     Q_PROPERTY(int count READ count)
 
 std::vector<Sensor *> sensors;
+std::vector<IntersectionPoint *> intersections;
+std::vector< std::vector< Sensor *> >  sensor_grid;
+void add_intersection(short x, short y);
+BoundingBox calc_bounding_box(short x, short y, short radius);
 public:
     explicit SensorController(QObject *parent = 0);
     ~SensorController() { this->create(0); }

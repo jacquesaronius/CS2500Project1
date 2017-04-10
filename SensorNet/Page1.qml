@@ -8,7 +8,9 @@ Page1Form {
         width: 252
         height: 252
         onPaint: {
-            const DILATION = 4;
+
+
+            const DILATION = 5;
             console.log("Onpaint got called!")
             var ctx = getContext("2d")
             var count = controller.count;
@@ -32,10 +34,18 @@ Page1Form {
                 ctx.moveTo(x, y - 4);
                 ctx.lineTo(x, y + 4);
                 ctx.stroke();
+                if (sensor.active)
+                {
+
+                    ctx.beginPath();
+                    ctx.strokeStyle = "green";
+                    ctx.arc(x, y, RADIUS * DILATION, 0, 360, false);
+                    ctx.stroke();
+
+                }
             }
 
         }
-
     }
     objectName: "page1"
 
