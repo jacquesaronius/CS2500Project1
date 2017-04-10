@@ -34,10 +34,18 @@ Page1Form {
                 ctx.moveTo(x, y - 4);
                 ctx.lineTo(x, y + 4);
                 ctx.stroke();
+                if (sensor.active)
+                {
+
+                    ctx.beginPath();
+                    ctx.strokeStyle = "green";
+                    ctx.arc(x, y, RADIUS * DILATION, 0, 360, false);
+                    ctx.stroke();
+
+                }
             }
 
         }
-
     }
     objectName: "page1"
 
