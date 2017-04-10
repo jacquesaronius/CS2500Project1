@@ -58,3 +58,16 @@ int SensorController::count() const
 {
     return sensors.size();
 }
+
+BoundingBox SensorController::calc_bounding_box(short x,
+                                                short y,
+                                                short radius)
+{
+    BoundingBox b;
+    b.left = x - radius >= Sensor::MIN_X ? x - radius : Sensor::MIN_X;
+    b.right = x + radius <= Sensor::MAX_X ? x + radius : Sensor::MAX_X;
+    b.top =  y - radius >= Sensor::MIN_Y ? y - radius : Sensor::MIN_Y;
+    b.bottom = y + radius <= Sensor::MAX_Y ? y + radius : Sensor::MAX_Y;
+
+    return b;
+}

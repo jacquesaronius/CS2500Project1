@@ -34,4 +34,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 HEADERS += \
     sensor.h \
     sensorcontroller.h \
-    intersectionpoint.h
+    intersectionpoint.h \
+    boundingbox.h
