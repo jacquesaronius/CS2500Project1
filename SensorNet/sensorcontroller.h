@@ -4,6 +4,7 @@
 #include <QObject>
 #include <vector>
 #include "sensor.h"
+#include "intersectionpoint.h"
 
 class SensorController : public QObject
 {
@@ -11,6 +12,8 @@ class SensorController : public QObject
     Q_PROPERTY(int count READ count)
 
 std::vector<Sensor *> sensors;
+std::vector<IntersectionPoint *> intersections;
+void add_intersection(short x, short y);
 public:
     explicit SensorController(QObject *parent = 0);
     ~SensorController() { this->create(0); }

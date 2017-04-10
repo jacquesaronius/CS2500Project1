@@ -5,10 +5,22 @@ SensorController::SensorController(QObject *parent) : QObject(parent)
 
 }
 
+void SensorController::add_intersection(short x, short y)
+{
+    IntersectionPoint * p = new IntersectionPoint(x, y);
+    intersections.push_back(p);
+}
+
 void SensorController::create(int n)
 {
     int i = 0;
 
+    while (!intersections.empty())
+    {
+        IntersectionPoint * p = intersections.back();
+        intersections.pop_back();
+        delete p;
+    }
     while (!sensors.empty())
     {
         Sensor * t = sensors.back();
