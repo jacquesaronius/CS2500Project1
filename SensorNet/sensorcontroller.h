@@ -13,7 +13,7 @@ class SensorController : public QObject
 
 std::vector<Sensor *> sensors;
 std::vector<IntersectionPoint *> intersections;
-std::vector< std::vector< Sensor *> >  grid_layout;
+std::vector< std::vector< Sensor *> >  sensor_grid;
 void add_intersection(short x, short y);
 public:
     explicit SensorController(QObject *parent = 0);

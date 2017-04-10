@@ -14,7 +14,7 @@ void SensorController::add_intersection(short x, short y)
 void SensorController::create(int n)
 {
     int i = 0;
-    grid_layout.clear();
+    sensor_grid.clear();
 
     for (int j = 0; j < Sensor::MAX_X + 1; j++)
     {
@@ -23,7 +23,7 @@ void SensorController::create(int n)
         for (int k = 0; k < Sensor::MAX_Y + 1; k++)
             y.push_back(NULL);
 
-        grid_layout.push_back(y);
+        sensor_grid.push_back(y);
     }
 
     while (!intersections.empty())
@@ -41,7 +41,7 @@ void SensorController::create(int n)
     while (i < n)
     {
         Sensor * t = new Sensor(this);
-        grid_layout[t->x()][t->y()] = t;
+        sensor_grid[t->x()][t->y()] = t;
         sensors.push_back(t);
         i++;
     }
