@@ -59,7 +59,7 @@ int SensorController::count() const
     return sensors.size();
 }
 
-void findIntersectionPoints(const Sensor *a, const Sensor* b)
+void SensorController::findIntersectionPoints(const Sensor *a, const Sensor* b)
 {
     float distance=sqrt(pow((a->x() - b->x()),2) + pow((a->y() - b->y()), 2))/2;
     float height=sqrt(pow(a->RADIUS, 2)-pow(distance, 2));
@@ -70,7 +70,10 @@ void findIntersectionPoints(const Sensor *a, const Sensor* b)
     float x2=x_temp-height*static_cast<float>(b->y()-a->y())/(distance*2);
     float y2=y_temp+height*static_cast<float>(b->x()-a->x())/(distance*2);
 
-    return ;
+    add_intersection(x1, y1);
+    add_intersection(x2, y2);
+
+    return;
 }
 
 bool SensorController::ifOverlap(const Sensor *a, const Sensor *b)
@@ -94,4 +97,29 @@ BoundingBox SensorController::calc_bounding_box(short x,
     b.bottom = y + radius <= Sensor::MAX_Y ? y + radius : Sensor::MAX_Y;
 
     return b;
+}
+
+std::vector <Sensor*> SensorController::findOverlappingSensors(Sensor *a)
+{
+    BoundingBox Box=calc_bounding_box(a->x(), a->y(), 2*Sensor::RADIUS);
+    std::vector <Sensor*> Overlaps;
+
+    for(int i=Box.left; i<Box.right+1;i++)
+    {
+        for(int j=Box.top; i<Box.bottom+1;i++)
+        {
+            if(sensor_grid[i][j]!=NULL)
+                if(ifOverlap(a, sensor_grid[i][j]) == true)
+                    Overlaps.push_back(sensor_grid[i][j]);
+        }
+    }
+    return Overlaps;
+}
+
+SensorController::RandomTopDown()
+{
+    for(auto it=sensors.begin(); it != sensors.end(); it++)
+    {
+        (*it)->activate();
+    }
 }

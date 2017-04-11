@@ -18,6 +18,7 @@ std::vector<IntersectionPoint *> intersections;
 std::vector< std::vector< Sensor *> >  sensor_grid;
 void add_intersection(short x, short y);
 BoundingBox calc_bounding_box(short x, short y, short radius);
+std::vector <Sensor*> findOverlappingSensors(Sensor *a);
 public:
     explicit SensorController(QObject *parent = 0);
     ~SensorController() { this->create(0); }
