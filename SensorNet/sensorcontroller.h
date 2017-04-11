@@ -9,6 +9,8 @@
 #include "intersectionpoint.h"
 #include "boundingbox.h"
 #include <QDebug>
+#include <QThread>
+#include <QtConcurrent/QtConcurrent>
 
 
 class SensorController : public QObject
@@ -51,6 +53,7 @@ public:
     ~SensorController() { this->create(0); }
     Q_INVOKABLE Sensor * get_sensor(int n);
     int count() const;
+    bool has_active();
 
     bool ifOverlap(const Sensor *a, const Sensor *b);
     void findIntersectionPoints(const Sensor* a, const Sensor *b);

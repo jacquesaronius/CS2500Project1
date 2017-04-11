@@ -147,7 +147,10 @@ bool SensorController::hasEnergy()
 
 void SensorController::run()
 {
-
+    if (mode() == ALL_ACTIVE)
+    {
+        //QtConcurrent::run((void)all_active);
+    }
 }
 
 bool SensorController::is_sensor_redundant(const Sensor * sensor) const
