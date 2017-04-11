@@ -5,11 +5,33 @@ SensorController::SensorController(QObject *parent) : QObject(parent)
 
 }
 
+bool SensorController::network_is_alive()
+{
+    const short THRESHOLD = 50;
+    short percentage = (static_cast<float>(areaCovered())
+                        / (Sensor::MAX_X * Sensor::MAX_Y) * 100);
+
+    return percentage >= THRESHOLD;
+}
+
+void SensorController::discharge_all()
+{
+    for (auto it = sensors.begin(); it != sensors.end(); it++)
+    {
+        --(*(*it));
+    }
+}
+
 void SensorController::add_intersection(short x, short y)
 {
     IntersectionPoint * p = new IntersectionPoint(x, y);
+    std::vector<Sensor *> t;
     for (unsigned int i = 0; i < intersections.size(); i ++)
-        if (p)
+        if (*p == *intersections[i])
+            return;
+    t = pos_coverage(x, y);
+    for (auto i = t.begin(); i != t.end(); i++)
+        p->add_sensor_in_range(*i);
     intersections.push_back(p);
 }
 
@@ -115,7 +137,7 @@ std::vector <Sensor*> SensorController::findOverlappingSensors(Sensor *a)
 
     for(int i=Box.left; i<Box.right+1;i++)
     {
-        for(int j=Box.top; i<Box.bottom+1;i++)
+        for(int j=Box.top; j<Box.bottom+1;j++)
         {
             if(sensor_grid[i][j]!=NULL)
                 if(ifOverlap(a, i, j) == true)
@@ -128,20 +150,20 @@ std::vector <Sensor*> SensorController::findOverlappingSensors(Sensor *a)
 void SensorController::RandomTopDown()
 {
 
-    for(auto i=sensors.begin(); i != sensors.end(); i++)
-    {
 
-        (*i)->activate();
-    }
+    find_all_intersections();
 
     do
     {
+        activate_all_sensors();
         int randomNumber=rand() % sensors.size();
         if(is_sensor_redundant(sensors[randomNumber])==true)
             sensors[randomNumber]->deactivate();
+        discharge_all();
+
         callback(true);
 
-    }while(hasEnergy()==true && has_active()==true);
+    }while(hasEnergy() && has_active() && network_is_alive());
 
     callback(false);
 }
@@ -149,14 +171,22 @@ void SensorController::RandomTopDown()
 void SensorController::RandomBottomUp()
 {
 
+    bool start_tracking_life = false;
+    bool alive = true;
     do
     {
+
+        if (!start_tracking_life && network_is_alive())
+            start_tracking_life = true;
+        if (start_tracking_life)
+            alive = network_is_alive();
         int randomNumber=rand() % sensors.size();
-        if(is_sensor_redundant(sensors[randomNumber])==true)
+        if(is_sensor_redundant(sensors[randomNumber])==false)
             sensors[randomNumber]->activate();
+        discharge_all();
         callback(true);
 
-    }while(hasEnergy()==true && has_active()==true);
+    }while(hasEnergy() && has_active() && alive);
 
     callback(false);
 }
@@ -164,19 +194,11 @@ void SensorController::RandomBottomUp()
 int SensorController::areaCovered()
 {
     int AreaCovered=0;
-    for(int i=0; i<Sensor::MAX_X + 1;i++)
+    for(int i=0; i<Sensor::MAX_X;i++)
     {
-        for(int j=0; j<Sensor::MAX_Y + 1;j++)
+        for(int j=0; j<Sensor::MAX_Y; j++)
         {
-            BoundingBox b=calc_bounding_box(i, j, Sensor::RADIUS);
-            for(int k=b.left; k<b.right;k++)
-            {
-                for(int l=b.top; l<b.bottom; l++)
-                {
-                    if(sensor_grid[k][l] !=NULL && ifOverlap(sensor_grid[k][l], i, j)==true)
-                        AreaCovered++;
-                }
-            }
+            if (pos_is_covered(i, j)) AreaCovered++;
         }
     }
     return AreaCovered;
@@ -219,18 +241,18 @@ void SensorController::run()
 
 bool SensorController::is_sensor_redundant(const Sensor * sensor) const
 {
-    bool is_redundant = true;
+    bool is_redundant = false;
     auto box = calc_bounding_box(sensor->x(),
                                  sensor->y(),
                                  Sensor::RADIUS);
 
-    for (int i = box.left; i < box.right + 1 && is_redundant; i++)
+    for (int i = box.left; i < box.right + 1 && !is_redundant; i++)
     {
-        for (int j = box.top; j < box.bottom + 1 && is_redundant; j++)
+        for (int j = box.top; j < box.bottom + 1 && !is_redundant; j++)
         {
             auto it = intersections.begin();
 
-            for (; it != intersections.end() && is_redundant; it++)
+            for (; it != intersections.end() && !is_redundant; it++)
             {
                 is_redundant = (*it)->active_sensors_in_range() > 1;
             }
@@ -270,10 +292,7 @@ void SensorController::all_active()
     while (hasEnergy())
     {
 
-        for (auto it = sensors.begin(); it != sensors.end(); it++)
-        {
-            --(*(*it));
-        }
+
         callback(true);
     }
     callback(false);
@@ -350,6 +369,7 @@ void SensorController::update_report_data(short id)
                     .arg(m_rounds)
                     .arg((static_cast<float>(coverage)
                          / (Sensor::MAX_X * Sensor::MAX_Y)) * 100));
+            break;
 
         }
         case REPORT_ENERGY:
@@ -364,6 +384,7 @@ void SensorController::update_report_data(short id)
             reports[id].append(QString("%1,%2\n")
                     .arg(m_rounds)
                     .arg(energy));
+            break;
         }
     }
 
@@ -384,8 +405,8 @@ void SensorController::write_report(short id)
     {
         "report_alive_sensors",
         "report_active_sensors",
-        "report_coverage.csv",
-        "report_energy.csv"
+        "report_coverage",
+        "report_energy"
     };
 
     QString file_name = QString("%1_%2_%3.csv")
@@ -417,4 +438,42 @@ void SensorController::write_all_reports()
     {
         write_report(i);
     }
+}
+
+std::vector<Sensor *> SensorController::pos_coverage(short x, short y)
+{
+    std::vector<Sensor *> coverage;
+    auto box = calc_bounding_box(x, y, Sensor::RADIUS);
+    for (int i = box.left; i < box.right + 1; i++)
+        for (int j = box.top; j < box.bottom + 1; j++)
+        {
+            if (sensor_grid[i][j] != NULL)
+            {
+                auto s = sensor_grid[i][j];
+                int distance = sqrt(pow((s->x() - x),2) + pow((s->y() - y), 2));
+
+                if (distance < Sensor::RADIUS)
+                    coverage.push_back(s);
+
+            }
+        }
+    return coverage;
+}
+
+bool SensorController::pos_is_covered(short x, short y)
+{
+    auto box = calc_bounding_box(x,y, Sensor::RADIUS);
+    bool covered = false;
+    for (int i = box.left; i < box.right + 1 && !covered; i++)
+        for (int j = box.top; j < box.bottom + 1 && !covered; j++)
+        {
+            if (sensor_grid[i][j] != NULL && sensor_grid[i][j]->active())
+            {
+                auto s = sensor_grid[i][j];
+                int distance = sqrt(pow((s->x() - x),2) + pow((s->y() - y), 2));
+
+                covered = distance < Sensor::RADIUS;
+            }
+        }
+    return covered;
 }
