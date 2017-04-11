@@ -8,6 +8,8 @@ SensorController::SensorController(QObject *parent) : QObject(parent)
 void SensorController::add_intersection(short x, short y)
 {
     IntersectionPoint * p = new IntersectionPoint(x, y);
+    for (unsigned int i = 0; i < intersections.size(); i ++)
+        if (p)
     intersections.push_back(p);
 }
 
@@ -116,10 +118,44 @@ std::vector <Sensor*> SensorController::findOverlappingSensors(Sensor *a)
     return Overlaps;
 }
 
-SensorController::RandomTopDown()
+void SensorController::RandomTopDown()
 {
+
     for(auto it=sensors.begin(); it != sensors.end(); it++)
     {
         (*it)->activate();
     }
+    do
+    {
+        int randomNumber=rand() % sensors.size();
+        if(is_sensor_redundant(sensors[randomNumber])==true)
+            sensors[randomNumber]->deactivate();
+    }while(hasEnergy()==true);
+}
+
+bool SensorController::hasEnergy()
+{
+    bool energy=false;
+    for(int i=0; i<sensors.size() && !energy ; i++){
+        if(sensors[i]->energy()>0){
+            energy=true;
+        }
+    }
+    return energy;
+}
+
+void SensorController::run()
+{
+
+}
+
+bool SensorController::is_sensor_redundant(const Sensor * sensor) const
+{
+    return false;
+}
+
+void SensorController::callback()
+{
+
+
 }
