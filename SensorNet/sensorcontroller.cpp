@@ -122,17 +122,22 @@ std::vector <Sensor*> SensorController::findOverlappingSensors(Sensor *a)
 void SensorController::RandomTopDown()
 {
 
-    for(auto it=sensors.begin(); it != sensors.end(); it++)
+    for(auto i=sensors.begin(); i != sensors.end(); i++)
     {
-        (*it)->activate();
+
+        (*i)->activate();
     }
+
     do
     {
         int randomNumber=rand() % sensors.size();
         if(is_sensor_redundant(sensors[randomNumber])==true)
             sensors[randomNumber]->deactivate();
+        callback(true);
 
     }while(hasEnergy()==true && has_active()==true);
+
+    callback(false);
 }
 
 void SensorController::RandomBottomUp()
@@ -143,16 +148,19 @@ void SensorController::RandomBottomUp()
         int randomNumber=rand() % sensors.size();
         if(is_sensor_redundant(sensors[randomNumber])==true)
             sensors[randomNumber]->activate();
+        callback(true);
 
     }while(hasEnergy()==true && has_active()==true);
+
+    callback(false);
 }
 
 int SensorController::areaCovered()
 {
     int AreaCovered=0;
-    for(int i=0; i<50 ;i++)
+    for(int i=0; i<Sensor::MAX_X + 1;i++)
     {
-        for(int j=0; j<50;j++)
+        for(int j=0; j<Sensor::MAX_Y + 1;j++)
         {
             BoundingBox b=calc_bounding_box(i, j, Sensor::RADIUS);
             for(int k=b.left; k<b.right;k++)
@@ -189,6 +197,18 @@ void SensorController::run()
     {
         QtConcurrent::run(this, SensorController::all_active);
     }
+    else if (m_mode == TOP_DOWN_RANDOM)
+    {
+        QtConcurrent::run(this, SensorController::RandomTopDown);
+    }
+    else if (m_mode == BOTTOM_UP_RANDOM)
+    {
+        QtConcurrent::run(this, SensorController::RandomBottomUp);
+    }
+    else if (m_mode == GREEDY)
+    {
+        /* QtConcurrent::run(this, Greedy goes here) */;
+    }
 }
 
 bool SensorController::is_sensor_redundant(const Sensor * sensor) const
@@ -200,7 +220,7 @@ bool SensorController::is_sensor_redundant(const Sensor * sensor) const
 
     for (int i = box.left; i < box.right + 1 && is_redundant; i++)
     {
-        for (int j = box.top; j < box.bottom + 1 && is_redundant; i++)
+        for (int j = box.top; j < box.bottom + 1 && is_redundant; j++)
         {
             auto it = intersections.begin();
 
@@ -260,4 +280,26 @@ bool SensorController::has_active()
     }
 
     return active;
+}
+
+void SensorController::find_all_intersections()
+{
+    for(auto i=sensors.begin(); i != sensors.end(); i++)
+    {
+        auto ov = findOverlappingSensors(*i);
+        for (auto j = ov.begin(); j != ov.end(); j++)
+        {
+            findIntersectionPoints(*i, *j);
+        }
+    }
+}
+
+void SensorController::activate_all_sensors()
+{
+    for(auto i=sensors.begin(); i != sensors.end(); i++)
+    {
+
+        (*i)->activate();
+    }
+
 }

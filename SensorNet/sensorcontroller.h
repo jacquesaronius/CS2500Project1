@@ -42,6 +42,8 @@ class SensorController : public QObject
     void callback(bool);
 
     void all_active();
+    void find_all_intersections();
+    void activate_all_sensors();
 public:
     static const short ALL_ACTIVE = 0;
     static const short TOP_DOWN_RANDOM = 1;
