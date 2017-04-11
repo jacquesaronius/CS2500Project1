@@ -35,3 +35,8 @@ short IntersectionPoint::active_sensors_in_range() const
 
     return cnt;
 }
+
+bool IntersectionPoint::operator ==(const IntersectionPoint & rhs) const
+{
+    return x() == rhs.x() && y() == rhs.y();
+}

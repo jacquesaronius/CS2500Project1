@@ -18,6 +18,18 @@ int main(int argc, char *argv[])
     srand(time(NULL));
     engine.rootContext()->setContextProperty("controller", &controller);
     engine.rootContext()->setContextProperty("RADIUS", Sensor::RADIUS);
+    engine.rootContext()
+            ->setContextProperty("ALL_ACTIVE",
+                                 SensorController::ALL_ACTIVE);
+    engine.rootContext()
+            ->setContextProperty("TOP_DOWN_RANDOM",
+                                 SensorController::TOP_DOWN_RANDOM);
+    engine.rootContext()
+            ->setContextProperty("BOTTOM_UP_RANDOM",
+                                 SensorController::BOTTOM_UP_RANDOM);
+    engine.rootContext()
+            ->setContextProperty("GREEDY",
+                                 SensorController::GREEDY);
     engine.load(QUrl(QLatin1String("qrc:/main.qml")));
     page1 = engine.rootObjects()[0]->findChild<QObject *>("page1");
     QObject::connect(page1,

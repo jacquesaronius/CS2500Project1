@@ -61,6 +61,7 @@ Page1Form {
         onUpdate: {
             myCanvas.requestPaint()
         }
+
     }
 
 
