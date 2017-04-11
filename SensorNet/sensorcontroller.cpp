@@ -17,6 +17,12 @@ void SensorController::create(int n)
 {
     int i = 0;
     sensor_grid.clear();
+    reports.clear();
+    for (int j = 0; j < REPORT_ENERGY + 1; j++)
+    {
+        QString r;
+        reports.push_back(r);
+    }
 
     for (int j = 0; j < Sensor::MAX_X + 1; j++)
     {
@@ -240,11 +246,13 @@ void SensorController::callback(bool running)
     if(running)
     {
         m_rounds++;
+        update_all_reports();
         update();
         QThread::msleep(m_delay);
     }
     else
     {
+        write_all_reports();
         m_status = "Simulation complete.";
         update();
 
@@ -302,4 +310,111 @@ void SensorController::activate_all_sensors()
         (*i)->activate();
     }
 
+}
+
+void SensorController::update_report_data(short id)
+{
+    switch (id)
+    {
+        case REPORT_ALIVE_SENSORS:
+        {
+            short count = 0;
+            for (auto i = sensors.begin(); i != sensors.end(); i++)
+            {
+                if ((*i)->energy() > 0)
+                    count++;
+            }
+            reports[id].append(QString("%1,%2\n")
+                .arg(m_rounds)
+                .arg(static_cast<float>(count)));
+
+            break;
+        }
+        case REPORT_ACTIVE_SENSORS:
+        {
+            short count = 0;
+            for (auto i = sensors.begin(); i != sensors.end(); i++)
+            {
+                if ((*i)->active())
+                    count++;
+            }
+            reports[id].append(QString("%1,%2\n")
+                    .arg(m_rounds)
+                    .arg(static_cast<float>(count)));
+            break;
+        }
+        case REPORT_COVERAGE:
+        {
+            int coverage = areaCovered();
+            reports[id].append(QString("%1,%2\n")
+                    .arg(m_rounds)
+                    .arg((static_cast<float>(coverage)
+                         / (Sensor::MAX_X * Sensor::MAX_Y)) * 100));
+
+        }
+        case REPORT_ENERGY:
+        {
+            float energy = 0;
+            for (auto i = sensors.begin(); i != sensors.end(); i++)
+            {
+                energy = energy + (*i)->energy();
+            }
+            energy = energy / sensors.size();
+
+            reports[id].append(QString("%1,%2\n")
+                    .arg(m_rounds)
+                    .arg(energy));
+        }
+    }
+
+}
+
+void SensorController::write_report(short id)
+{
+    auto t = time(NULL);
+    QString mode_names[4]
+    {
+        "all_active",
+        "top_down",
+        "bottom_up",
+        "greedy"
+    };
+
+    QString file_names[4] =
+    {
+        "report_alive_sensors",
+        "report_active_sensors",
+        "report_coverage.csv",
+        "report_energy.csv"
+    };
+
+    QString file_name = QString("%1_%2_%3.csv")
+            .arg(t)
+            .arg(mode_names[m_mode])
+            .arg(file_names[id]);
+
+    QFile file(file_name);
+
+    if (file.open(QIODevice::WriteOnly))
+    {
+        QTextStream stream(& file);
+        stream << reports[id];
+        file.close();
+    }
+}
+
+void SensorController::update_all_reports()
+{
+    for (int i = REPORT_ALIVE_SENSORS; i < REPORT_ENERGY + 1; i++)
+    {
+        update_report_data(i);
+    }
+}
+
+void SensorController::write_all_reports()
+{
+    for (int i = REPORT_ALIVE_SENSORS; i < REPORT_ENERGY + 1; i++)
+    {
+        write_report(i);
+    }
 }

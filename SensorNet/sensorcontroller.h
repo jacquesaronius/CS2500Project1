@@ -4,6 +4,7 @@
 #include <QObject>
 #include <vector>
 #include <cmath>
+#include <ctime>
 #include <stdlib.h>
 #include "sensor.h"
 #include "intersectionpoint.h"
@@ -11,8 +12,7 @@
 #include <QDebug>
 #include <QThread>
 #include <QtConcurrent/QtConcurrent>
-
-
+#include <QString>
 class SensorController : public QObject
 {
     Q_OBJECT
@@ -29,9 +29,11 @@ class SensorController : public QObject
     short m_rounds = 0;
     short m_delay = 0;
     short m_mode = ALL_ACTIVE;
+
     void RandomBottomUp();
     void RandomTopDown();
     QString m_status;
+    std::vector<QString> reports;
     std::vector<Sensor *> sensors;
     std::vector<IntersectionPoint *> intersections;
     std::vector< std::vector< Sensor *> >  sensor_grid;
@@ -44,11 +46,19 @@ class SensorController : public QObject
     void all_active();
     void find_all_intersections();
     void activate_all_sensors();
+    void update_report_data(short id);
+    void write_report(short id);
+    void update_all_reports();
+    void write_all_reports();
 public:
     static const short ALL_ACTIVE = 0;
     static const short TOP_DOWN_RANDOM = 1;
     static const short BOTTOM_UP_RANDOM = 2;
     static const short GREEDY = 3;
+    static const short REPORT_ALIVE_SENSORS = 0;
+    static const short REPORT_ACTIVE_SENSORS = 1;
+    static const short REPORT_COVERAGE = 2;
+    static const short REPORT_ENERGY = 3;
 
     explicit SensorController(QObject *parent = 0);
     ~SensorController() { this->create(0); }
