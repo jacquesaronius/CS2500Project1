@@ -37,11 +37,13 @@ class SensorController : public QObject
     std::vector<Sensor *> sensors;
     std::vector<IntersectionPoint *> intersections;
     std::vector< std::vector< Sensor *> >  sensor_grid;
+    std::vector<Sensor *> pos_coverage(short x, short y);
     void add_intersection(short x, short y);
     BoundingBox calc_bounding_box(const short x,
                                   const short y,
                                   const short radius) const;
     void callback(bool);
+    void discharge_all();
 
     void all_active();
     void find_all_intersections();
@@ -50,6 +52,8 @@ class SensorController : public QObject
     void write_report(short id);
     void update_all_reports();
     void write_all_reports();
+    bool pos_is_covered(short x, short y);
+    bool network_is_alive();
 public:
     static const short ALL_ACTIVE = 0;
     static const short TOP_DOWN_RANDOM = 1;
