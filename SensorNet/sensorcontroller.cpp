@@ -88,9 +88,10 @@ bool SensorController::ifOverlap(const Sensor *a, const int x, const int y)
         return false;
 }
 
-BoundingBox SensorController::calc_bounding_box(short x,
-                                                short y,
-                                                short radius)
+
+BoundingBox SensorController::calc_bounding_box(const short x,
+                                                const short y,
+                                                const short radius) const
 {
     BoundingBox b;
     b.left = x - radius >= Sensor::MIN_X ? x - radius : Sensor::MIN_X;
@@ -131,9 +132,7 @@ void SensorController::RandomTopDown()
         if(is_sensor_redundant(sensors[randomNumber])==true)
             sensors[randomNumber]->deactivate();
 
-
-        sensors.active();
-    }while(hasEnergy()==true && hasactive()==true);
+    }while(hasEnergy()==true && has_active()==true);
 }
 
 void SensorController::RandomBottomUp()
@@ -145,34 +144,34 @@ void SensorController::RandomBottomUp()
         if(is_sensor_redundant(sensors[randomNumber])==true)
             sensors[randomNumber]->activate();
 
-        sensors.active();
-    }while(hasEnergy()==true && hasactive()==true);
+    }while(hasEnergy()==true && has_active()==true);
 }
 
 int SensorController::areaCovered()
 {
     int AreaCovered=0;
-    for(int i=X_MIN; i<X_MAX ;i++)
+    for(int i=0; i<50 ;i++)
     {
-        for(int j=Y_MIN; j<Y_MAX;j++)
+        for(int j=0; j<50;j++)
         {
             BoundingBox b=calc_bounding_box(i, j, Sensor::RADIUS);
             for(int k=b.left; k<b.right;k++)
             {
                 for(int l=b.top; l<b.bottom; l++)
                 {
-                    if(sensor_grid[k][b] !=NULL && ifOverlap(sensor_grid[k][b], i, j)==true)
+                    if(sensor_grid[k][l] !=NULL && ifOverlap(sensor_grid[k][l], i, j)==true)
                         AreaCovered++;
                 }
             }
         }
     }
+    return AreaCovered;
 }
 
 bool SensorController::hasEnergy()
 {
     bool energy=false;
-    for(int i=0; (i<sensors.size()) && !energy ; i++){
+    for(int i=0; (i<sensors.size()) ; i++){
         if(sensors[i]->energy()>0){
             energy=true;
         }
@@ -182,16 +181,58 @@ bool SensorController::hasEnergy()
 
 void SensorController::run()
 {
-
+    if (mode() == ALL_ACTIVE)
+    {
+        //QtConcurrent::run((void)all_active);
+    }
 }
 
 bool SensorController::is_sensor_redundant(const Sensor * sensor) const
 {
-    return false;
+    bool is_redundant = true;
+    auto box = calc_bounding_box(sensor->x(),
+                                 sensor->y(),
+                                 Sensor::RADIUS);
+
+    for (int i = box.left; i < box.right + 1 && is_redundant; i++)
+    {
+        for (int j = box.top; j < box.bottom + 1 && is_redundant; i++)
+        {
+            auto it = intersections.begin();
+
+            for (; it != intersections.end() && is_redundant; it++)
+            {
+                is_redundant = (*it)->active_sensors_in_range() > 1;
+            }
+        }
+    }
+
+    return is_redundant;
 }
 
 void SensorController::callback()
 {
+    m_rounds++;
+}
 
+void SensorController::all_active()
+{
+    while(hasEnergy())
+    {
+        for (auto it = sensors.begin(); it != sensors.end(); it++)
+        {
+            (*it)->activate();
+        }
+    }
+}
 
+bool SensorController::has_active()
+{
+    bool active = false;
+    for (auto it = sensors.begin(); it != sensors.end() && !active; it++)
+    {
+        active = (*it)->active();
+    }
+
+    return active;
 }

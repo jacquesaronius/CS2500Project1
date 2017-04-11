@@ -46,8 +46,12 @@ void Sensor::init()
 
 }
 
+float Sensor::area()
+{
+    return(M_PI * RADIUS * RADIUS);
+}
 
-void operator ++(Sensor s)
+void operator --(Sensor s)
 {
     if (s.active())
         s.m_energy--;

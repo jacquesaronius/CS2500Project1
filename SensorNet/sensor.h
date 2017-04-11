@@ -28,10 +28,13 @@
                 short y() const;
                 short energy() const;
                 bool active();
+                float area();
                 Q_INVOKABLE void activate();
                 Q_INVOKABLE void deactivate();
                 Q_INVOKABLE void toggle();
-                friend void operator ++(Sensor);
+
+
+                friend void operator --(Sensor);
                 explicit Sensor(QObject *parent = 0):
                     QObject(parent),
                     m_energy(Sensor::INITIAL_ENERGY),

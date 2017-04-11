@@ -9,6 +9,8 @@
 #include "intersectionpoint.h"
 #include "boundingbox.h"
 #include <QDebug>
+#include <QThread>
+#include <QtConcurrent/QtConcurrent>
 
 
 class SensorController : public QObject
@@ -34,8 +36,12 @@ class SensorController : public QObject
     std::vector<IntersectionPoint *> intersections;
     std::vector< std::vector< Sensor *> >  sensor_grid;
     void add_intersection(short x, short y);
-    BoundingBox calc_bounding_box(short x, short y, short radius);
+    BoundingBox calc_bounding_box(const short x,
+                                  const short y,
+                                  const short radius) const;
     void callback();
+
+    void all_active();
 public:
     static const short ALL_ACTIVE = 0;
     static const short TOP_DOWN_RANDOM = 1;
@@ -48,6 +54,9 @@ public:
     int count() const;
     int areaCovered();
     bool ifOverlap(const Sensor *a, const int x, const int y);
+    bool has_active();
+
+    bool ifOverlap(const Sensor *a, const Sensor *b);
     void findIntersectionPoints(const Sensor* a, const Sensor *b);
     short rounds() const { return m_rounds; }
     short delay() const { return m_delay; }
