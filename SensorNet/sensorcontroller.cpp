@@ -292,7 +292,7 @@ void SensorController::all_active()
     while (hasEnergy())
     {
 
-
+        discharge_all();
         callback(true);
     }
     callback(false);
