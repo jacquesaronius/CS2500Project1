@@ -16,6 +16,7 @@ class IntersectionPoint
         short y() const { return m_y; }
         bool add_sensor_in_range(Sensor *);
         short active_sensors_in_range() const;
+        bool operator ==(const IntersectionPoint & rhs) const;
 };
 
 #endif // INTERSECTIONPOINT_H

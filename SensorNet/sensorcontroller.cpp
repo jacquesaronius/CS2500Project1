@@ -8,6 +8,8 @@ SensorController::SensorController(QObject *parent) : QObject(parent)
 void SensorController::add_intersection(short x, short y)
 {
     IntersectionPoint * p = new IntersectionPoint(x, y);
+    for (unsigned int i = 0; i < intersections.size(); i ++)
+        if (p)
     intersections.push_back(p);
 }
 
@@ -70,4 +72,19 @@ BoundingBox SensorController::calc_bounding_box(short x,
     b.bottom = y + radius <= Sensor::MAX_Y ? y + radius : Sensor::MAX_Y;
 
     return b;
+}
+
+void SensorController::run()
+{
+
+}
+
+bool SensorController::is_sensor_redundant(const Sensor * sensor) const
+{
+    return false;
+}
+
+void SensorController::callback()
+{
+
 }
