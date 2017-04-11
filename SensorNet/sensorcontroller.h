@@ -35,8 +35,12 @@ class SensorController : public QObject
     std::vector<IntersectionPoint *> intersections;
     std::vector< std::vector< Sensor *> >  sensor_grid;
     void add_intersection(short x, short y);
-    BoundingBox calc_bounding_box(short x, short y, short radius);
+    BoundingBox calc_bounding_box(const short x,
+                                  const short y,
+                                  const short radius) const;
     void callback();
+
+    void all_active();
 public:
     static const short ALL_ACTIVE = 0;
     static const short TOP_DOWN_RANDOM = 1;

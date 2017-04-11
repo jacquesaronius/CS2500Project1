@@ -88,9 +88,10 @@ bool SensorController::ifOverlap(const Sensor *a, const Sensor *b)
         return false;
 }
 
-BoundingBox SensorController::calc_bounding_box(short x,
-                                                short y,
-                                                short radius)
+
+BoundingBox SensorController::calc_bounding_box(const short x,
+                                                const short y,
+                                                const short radius) const
 {
     BoundingBox b;
     b.left = x - radius >= Sensor::MIN_X ? x - radius : Sensor::MIN_X;
@@ -136,7 +137,7 @@ void SensorController::RandomTopDown()
 bool SensorController::hasEnergy()
 {
     bool energy=false;
-    for(int i=0; i<sensors.size() && !energy ; i++){
+    for(uint i=0; i<sensors.size() && !energy ; i++){
         if(sensors[i]->energy()>0){
             energy=true;
         }
@@ -151,11 +152,50 @@ void SensorController::run()
 
 bool SensorController::is_sensor_redundant(const Sensor * sensor) const
 {
-    return false;
+    bool is_redundant = true;
+    auto box = calc_bounding_box(sensor->x(),
+                                 sensor->y(),
+                                 Sensor::RADIUS);
+
+    for (int i = box.left; i < box.right + 1 && is_redundant; i++)
+    {
+        for (int j = box.top; j < box.bottom + 1 && is_redundant; i++)
+        {
+            auto it = intersections.begin();
+
+            for (; it != intersections.end() && is_redundant; it++)
+            {
+                is_redundant = (*it)->active_sensors_in_range() > 1;
+            }
+        }
+    }
+
+    return is_redundant;
 }
 
 void SensorController::callback()
 {
+    m_rounds++;
+}
 
+void SensorController::all_active()
+{
+    while(hasEnergy())
+    {
+        for (auto it = sensors.begin(); it != sensors.end(); it++)
+        {
+            (*it)->activate();
+        }
+    }
+}
 
+bool SensorController::has_active()
+{
+    bool active = false;
+    for (auto it = sensors.begin(); it != sensors.end() && !active; it++)
+    {
+        active = (*it)->active();
+    }
+
+    return active;
 }

@@ -125,8 +125,7 @@ float Sensor::area()
     return Area;
 }
 
-
-void operator ++(Sensor s)
+void operator --(Sensor s)
 {
     if (s.active())
         s.m_energy--;
