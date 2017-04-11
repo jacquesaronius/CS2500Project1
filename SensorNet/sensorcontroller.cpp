@@ -148,7 +148,10 @@ bool SensorController::hasEnergy()
 void SensorController::run()
 {
 
-    if (mode() == ALL_ACTIVE)
+    m_rounds = 0;
+    m_status = "Simulation Started.";
+
+    if (m_mode == ALL_ACTIVE)
     {
         QtConcurrent::run(this, SensorController::all_active);
     }
@@ -177,19 +180,41 @@ bool SensorController::is_sensor_redundant(const Sensor * sensor) const
     return is_redundant;
 }
 
-void SensorController::callback()
+void SensorController::callback(bool running)
 {
-    m_rounds++;
-    update();
-    QThread::sleep(static_cast<ulong>(m_delay) / 1000);
+
+    if(running)
+    {
+        m_rounds++;
+        update();
+        QThread::msleep(m_delay);
+    }
+    else
+    {
+        m_status = "Simulation complete.";
+        update();
+
+    }
+
 }
 
 void SensorController::all_active()
 {
     for (auto it = sensors.begin(); it != sensors.end(); it++)
     {
-            (*it)->activate();
+        (*it)->activate();
     }
+
+    while (hasEnergy())
+    {
+
+        for (auto it = sensors.begin(); it != sensors.end(); it++)
+        {
+            --(*(*it));
+        }
+        callback(true);
+    }
+    callback(false);
 }
 
 bool SensorController::has_active()

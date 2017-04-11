@@ -32,7 +32,7 @@
                 Q_INVOKABLE void deactivate();
                 Q_INVOKABLE void toggle();
                 float area();
-                friend void operator --(Sensor);
+                friend void operator --(Sensor &);
                 explicit Sensor(QObject *parent = 0):
                     QObject(parent),
                     m_energy(Sensor::INITIAL_ENERGY),

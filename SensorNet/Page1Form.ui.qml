@@ -4,10 +4,11 @@ import QtQuick.Layouts 1.0
 
 Item {
     id: item1
+    property alias txtRounds: txtRounds
+    property alias txtStatus: txtStatus
     x: 0
     width: 640
     height: 480
-    property alias btnTopDown: btnTopDown
     z: 2
     rotation: 0
     opacity: 0.9
@@ -162,6 +163,7 @@ Item {
         id: spinDelay
         x: 232
         y: 20
+        value: 100
         stepSize: 100
         to: 2000
     }
@@ -172,8 +174,14 @@ Item {
     }
 
     Connections {
-        target: spinDelay
-        onValueChanged: controller.delay = spinDelay.value
+        target: btnCreate
+        onClicked: txtRounds.text = "0";
+    }
+
+
+    Connections {
+        target: btnRun
+        onClicked: controller.delay = spinDelay.value
     }
 
     Connections {

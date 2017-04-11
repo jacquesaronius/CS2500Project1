@@ -40,7 +40,7 @@ class SensorController : public QObject
     BoundingBox calc_bounding_box(const short x,
                                   const short y,
                                   const short radius) const;
-    void callback();
+    void callback(bool);
 
     void all_active();
 public:

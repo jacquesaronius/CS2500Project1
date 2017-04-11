@@ -1,5 +1,5 @@
 import QtQuick 2.7
-
+import QtQuick.Controls 2.0
 Page1Form {
     Canvas{
         id: myCanvas
@@ -59,7 +59,10 @@ Page1Form {
     Connections {
         target: controller
         onUpdate: {
-            myCanvas.requestPaint()
+            myCanvas.requestPaint();
+            txtRounds.text = controller.rounds;
+            txtStatus.text = controller.status;
+
         }
 
     }
