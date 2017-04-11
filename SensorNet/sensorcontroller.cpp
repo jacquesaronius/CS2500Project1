@@ -78,11 +78,11 @@ void SensorController::findIntersectionPoints(const Sensor *a, const Sensor* b)
     return;
 }
 
-bool SensorController::ifOverlap(const Sensor *a, const Sensor *b)
+bool SensorController::ifOverlap(const Sensor *a, const int x, const int y)
 {
-    int distance=sqrt(pow((a->x() - b->x()),2) + pow((a->y() - b->y()), 2));
+    int distance=sqrt(pow((a->x() - x),2) + pow((a->y() - y), 2));
 
-    if (distance < 2*(a->RADIUS) && distance <2*(b->RADIUS))
+    if (distance < 2*(a->RADIUS))
         return true;
     else
         return false;
@@ -111,7 +111,7 @@ std::vector <Sensor*> SensorController::findOverlappingSensors(Sensor *a)
         for(int j=Box.top; i<Box.bottom+1;i++)
         {
             if(sensor_grid[i][j]!=NULL)
-                if(ifOverlap(a, sensor_grid[i][j]) == true)
+                if(ifOverlap(a, i, j) == true)
                     Overlaps.push_back(sensor_grid[i][j]);
         }
     }
@@ -130,13 +130,49 @@ void SensorController::RandomTopDown()
         int randomNumber=rand() % sensors.size();
         if(is_sensor_redundant(sensors[randomNumber])==true)
             sensors[randomNumber]->deactivate();
-    }while(hasEnergy()==true);
+
+
+        sensors.active();
+    }while(hasEnergy()==true && hasactive()==true);
+}
+
+void SensorController::RandomBottomUp()
+{
+
+    do
+    {
+        int randomNumber=rand() % sensors.size();
+        if(is_sensor_redundant(sensors[randomNumber])==true)
+            sensors[randomNumber]->activate();
+
+        sensors.active();
+    }while(hasEnergy()==true && hasactive()==true);
+}
+
+int SensorController::areaCovered()
+{
+    int AreaCovered=0;
+    for(int i=X_MIN; i<X_MAX ;i++)
+    {
+        for(int j=Y_MIN; j<Y_MAX;j++)
+        {
+            BoundingBox b=calc_bounding_box(i, j, Sensor::RADIUS);
+            for(int k=b.left; k<b.right;k++)
+            {
+                for(int l=b.top; l<b.bottom; l++)
+                {
+                    if(sensor_grid[k][b] !=NULL && ifOverlap(sensor_grid[k][b], i, j)==true)
+                        AreaCovered++;
+                }
+            }
+        }
+    }
 }
 
 bool SensorController::hasEnergy()
 {
     bool energy=false;
-    for(int i=0; i<sensors.size() && !energy ; i++){
+    for(int i=0; (i<sensors.size()) && !energy ; i++){
         if(sensors[i]->energy()>0){
             energy=true;
         }

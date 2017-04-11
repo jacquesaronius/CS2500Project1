@@ -23,14 +23,13 @@ class SensorController : public QObject
 
 
     std::vector <Sensor*> findOverlappingSensors(Sensor *a);
-
     bool hasEnergy();
     short m_rounds = 0;
     short m_delay = 0;
     short m_mode = ALL_ACTIVE;
+    void RandomBottomUp();
     void RandomTopDown();
     QString m_status;
-    std::vector<Sensor *> active_sensors;
     std::vector<Sensor *> sensors;
     std::vector<IntersectionPoint *> intersections;
     std::vector< std::vector< Sensor *> >  sensor_grid;
@@ -47,8 +46,8 @@ public:
     ~SensorController() { this->create(0); }
     Q_INVOKABLE Sensor * get_sensor(int n);
     int count() const;
-
-    bool ifOverlap(const Sensor *a, const Sensor *b);
+    int areaCovered();
+    bool ifOverlap(const Sensor *a, const int x, const int y);
     void findIntersectionPoints(const Sensor* a, const Sensor *b);
     short rounds() const { return m_rounds; }
     short delay() const { return m_delay; }

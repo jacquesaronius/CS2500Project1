@@ -31,7 +31,6 @@
                 Q_INVOKABLE void activate();
                 Q_INVOKABLE void deactivate();
                 Q_INVOKABLE void toggle();
-                float area();
                 friend void operator ++(Sensor);
                 explicit Sensor(QObject *parent = 0):
                     QObject(parent),
