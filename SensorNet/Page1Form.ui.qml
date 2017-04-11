@@ -196,4 +196,8 @@ Item {
         onClicked: controller.mode = GREEDY
     }
 
+    Connections {
+        target: btnRun
+        onClicked: controller.run()
+    }
 }
