@@ -258,35 +258,31 @@ void SensorController::run()
 
 bool SensorController::is_sensor_redundant(const Sensor * sensor) const
 {
-    int is_redundant = 0;
-    int count = 0;
-    auto box = calc_bounding_box(sensor->x(),
-                                 sensor->y(),
-                                 Sensor::RADIUS);
+    unsigned int is_redundant = 0;
 
-    for (int i = box.left; i < box.right + 1; i++)
+    std::vector<IntersectionPoint *> candidates;
+
+    auto it = intersections.begin();
+    for (; it != intersections.end(); it++)
     {
-        for (int j = box.top; j < box.bottom + 1; j++)
+        int d = sqrt(pow((sensor->x() - (*it)->x()),2)
+            + pow((sensor->y() - (*it)->y()), 2));
+        if (d < Sensor::RADIUS)
         {
-            auto it = intersections.begin();
-            for (; it != intersections.end(); it++)
-            {
-                int d = sqrt(pow((sensor->x() - (*it)->x()),2)
-                             + pow((sensor->y() - (*it)->y()), 2));
-                if (d < Sensor::RADIUS)
-                {
-                    count++;
-                    if ((*it)->active_sensors_in_range() > 1)
-                    {
-                        is_redundant++;
-                    }
-                }
-
-            }
+            candidates.push_back(*it);
         }
     }
 
-    return count > 0 && count == is_redundant;
+
+
+    for (auto it = candidates.begin(); it != candidates.end(); it++)
+    {
+        if ((*it)->active_sensors_in_range() > 1)
+            is_redundant++;
+    }
+
+
+    return candidates.size() > 0 && candidates.size() == is_redundant;
 }
 
 void SensorController::callback(bool running)
