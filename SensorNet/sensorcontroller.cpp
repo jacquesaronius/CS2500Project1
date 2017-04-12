@@ -108,9 +108,9 @@ void SensorController::findIntersectionPoints(const Sensor *a, const Sensor* b)
 
 bool SensorController::ifOverlap(const Sensor *a, const int x, const int y)
 {
-    int distance=sqrt(pow((a->x() - x),2) + pow((a->y() - y), 2));
+    float distance=sqrt(static_cast<float>(pow((a->x() - x),2) + pow((a->y() - y), 2)));
 
-    if (distance < 2*(a->RADIUS))
+    if (distance < 2*(Sensor::RADIUS))
         return true;
     else
         return false;
@@ -147,23 +147,41 @@ std::vector <Sensor*> SensorController::findOverlappingSensors(Sensor *a)
     return Overlaps;
 }
 
+int SensorController::numOverlap(Sensor *a)
+{
+    BoundingBox Box=calc_bounding_box(a->x(), a->y(), 2*Sensor::RADIUS);
+    int Overlaps;
+
+    for(int i=Box.left; i<Box.right+1;i++)
+    {
+        for(int j=Box.top; j<Box.bottom+1; j++)
+        {
+            if(sensor_grid[i][j]!=NULL)
+                if(ifOverlap(a, i, j) == true)
+                    Overlaps++;
+        }
+    }
+    return Overlaps;
+}
+
 void SensorController::RandomTopDown()
 {
 
 
     find_all_intersections();
-
+    activate_all_sensors();
     do
     {
-        activate_all_sensors();
+
         int randomNumber=rand() % sensors.size();
         if(is_sensor_redundant(sensors[randomNumber])==true)
             sensors[randomNumber]->deactivate();
         discharge_all();
-
+        if (!network_is_alive())
+            activate_all_sensors();
         callback(true);
 
-    }while(hasEnergy() && has_active() && network_is_alive());
+    }while(network_is_alive());
 
     callback(false);
 }
@@ -223,43 +241,49 @@ void SensorController::run()
 
     if (m_mode == ALL_ACTIVE)
     {
-        QtConcurrent::run(this, SensorController::all_active);
+        QtConcurrent::run(this, &SensorController::all_active);
     }
     else if (m_mode == TOP_DOWN_RANDOM)
     {
-        QtConcurrent::run(this, SensorController::RandomTopDown);
+        QtConcurrent::run(this, &SensorController::RandomTopDown);
     }
     else if (m_mode == BOTTOM_UP_RANDOM)
     {
-        QtConcurrent::run(this, SensorController::RandomBottomUp);
+        QtConcurrent::run(this, &SensorController::RandomBottomUp);
     }
     else if (m_mode == GREEDY)
     {
-        /* QtConcurrent::run(this, Greedy goes here) */;
+        QtConcurrent::run(this, &SensorController::Greedy);
     }
 }
 
 bool SensorController::is_sensor_redundant(const Sensor * sensor) const
 {
-    bool is_redundant = false;
-    auto box = calc_bounding_box(sensor->x(),
-                                 sensor->y(),
-                                 Sensor::RADIUS);
+    unsigned int is_redundant = 0;
 
-    for (int i = box.left; i < box.right + 1 && !is_redundant; i++)
+    std::vector<IntersectionPoint *> candidates;
+
+    auto it = intersections.begin();
+    for (; it != intersections.end(); it++)
     {
-        for (int j = box.top; j < box.bottom + 1 && !is_redundant; j++)
+        int d = sqrt(pow((sensor->x() - (*it)->x()),2)
+            + pow((sensor->y() - (*it)->y()), 2));
+        if (d < Sensor::RADIUS)
         {
-            auto it = intersections.begin();
-
-            for (; it != intersections.end() && !is_redundant; it++)
-            {
-                is_redundant = (*it)->active_sensors_in_range() > 1;
-            }
+            candidates.push_back(*it);
         }
     }
 
-    return is_redundant;
+
+
+    for (auto it = candidates.begin(); it != candidates.end(); it++)
+    {
+        if ((*it)->active_sensors_in_range() > 1)
+            is_redundant++;
+    }
+
+
+    return candidates.size() > 0 && candidates.size() == is_redundant;
 }
 
 void SensorController::callback(bool running)
@@ -280,6 +304,58 @@ void SensorController::callback(bool running)
 
     }
 
+}
+
+void SensorController::Greedy()
+{
+    std::vector<Sensor *> sorted(sensors.size());
+    int maxnum=0;;
+    int counter=0;
+    cout<<"Test 1"<<endl;
+    find_all_intersections();
+
+    for (auto it = sensors.begin(); it != sensors.end(); it++)
+    {
+          (*it)->setoverlap(findOverlappingSensors(*it).size());
+          cout<<"Overlap First: "<<(*it)->overlap()<<endl;
+          if((*it)->overlap() >maxnum)
+              maxnum=(*it)->overlap();
+
+    }
+    cout<<"Test 2"<<endl;
+    for(int i=0; i<=maxnum;i++)
+    {
+        for (auto it = sensors.begin(); it != sensors.end(); it++)
+        {
+            if((*it)->overlap()==i)
+            {
+                cout<<"Test 3"<<endl;
+                sorted[counter]= (*it);
+                counter++;
+                cout<<"NumOverlaps: "<<(*it)->overlap()<<endl;
+                cout<<"counter: "<<counter<<endl;
+            }
+
+        }
+    }
+    cout<<"Test 4"<<endl;
+
+
+    activate_all_sensors();
+    do
+    {
+
+        for(auto it=sorted.rbegin(); it!=sorted.rend();it++)
+        {
+            if(is_sensor_redundant(*it)==true)
+                (*it)->deactivate();
+        }
+
+        discharge_all();
+        activate_all_sensors();
+        callback(true);
+    } while ((network_is_alive()));
+    callback(false);
 }
 
 void SensorController::all_active()

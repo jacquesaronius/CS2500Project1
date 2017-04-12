@@ -5,4 +5,5 @@ struct BoundingBox
 {
     short left, right, top, bottom;
 };
+
 #endif // BOUNDINGBOX_H

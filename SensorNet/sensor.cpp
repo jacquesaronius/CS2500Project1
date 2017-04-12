@@ -16,6 +16,16 @@ short Sensor::energy() const
     return m_energy;
 }
 
+int Sensor::overlap() const
+{
+    return m_overlap;
+}
+
+void Sensor::setoverlap(const int a)
+{
+    m_overlap=a;
+}
+
 bool Sensor::active()
 {
     if (m_energy <= 0)
