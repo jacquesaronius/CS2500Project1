@@ -241,19 +241,19 @@ void SensorController::run()
 
     if (m_mode == ALL_ACTIVE)
     {
-        QtConcurrent::run(this, SensorController::all_active);
+        QtConcurrent::run(this, &SensorController::all_active);
     }
     else if (m_mode == TOP_DOWN_RANDOM)
     {
-        QtConcurrent::run(this, SensorController::RandomTopDown);
+        QtConcurrent::run(this, &SensorController::RandomTopDown);
     }
     else if (m_mode == BOTTOM_UP_RANDOM)
     {
-        QtConcurrent::run(this, SensorController::RandomBottomUp);
+        QtConcurrent::run(this, &SensorController::RandomBottomUp);
     }
     else if (m_mode == GREEDY)
     {
-        QtConcurrent::run(this, SensorController::Greedy);
+        QtConcurrent::run(this, &SensorController::Greedy);
     }
 }
 
