@@ -258,24 +258,35 @@ void SensorController::run()
 
 bool SensorController::is_sensor_redundant(const Sensor * sensor) const
 {
-    bool is_redundant = false;
+    int is_redundant = 0;
+    int count = 0;
     auto box = calc_bounding_box(sensor->x(),
                                  sensor->y(),
                                  Sensor::RADIUS);
 
-    for (int i = box.left; i < box.right + 1 && !is_redundant; i++)
+    for (int i = box.left; i < box.right + 1; i++)
     {
-        for (int j = box.top; j < box.bottom + 1 && !is_redundant; j++)
+        for (int j = box.top; j < box.bottom + 1; j++)
         {
             auto it = intersections.begin();
-            for (; it != intersections.end() && !is_redundant; it++)
+            for (; it != intersections.end(); it++)
             {
-                is_redundant = (*it)->active_sensors_in_range() > 1;
+                int d = sqrt(pow((sensor->x() - (*it)->x()),2)
+                             + pow((sensor->y() - (*it)->y()), 2));
+                if (d < Sensor::RADIUS)
+                {
+                    count++;
+                    if ((*it)->active_sensors_in_range() > 1)
+                    {
+                        is_redundant++;
+                    }
+                }
+
             }
         }
     }
 
-    return is_redundant;
+    return count > 0 && count == is_redundant;
 }
 
 void SensorController::callback(bool running)
@@ -308,7 +319,7 @@ void SensorController::Greedy()
 
     for (auto it = sensors.begin(); it != sensors.end(); it++)
     {
-          (*it)->setoverlap(findOverlappingSensors(*it).size()-1);
+          (*it)->setoverlap(findOverlappingSensors(*it).size());
           cout<<"Overlap First: "<<(*it)->overlap()<<endl;
           if((*it)->overlap() >maxnum)
               maxnum=(*it)->overlap();
@@ -334,7 +345,7 @@ void SensorController::Greedy()
 
 
 
-    while(hasEnergy())
+    do
     {
         activate_all_sensors();
         for(auto it=sorted.rbegin(); it!=sorted.rend();it++)
@@ -345,7 +356,7 @@ void SensorController::Greedy()
 
         discharge_all();
         callback(true);
-    }
+    } while ((hasEnergy() && network_is_alive() && has_active()));
     callback(false);
 }
 
