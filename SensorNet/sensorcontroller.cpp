@@ -300,16 +300,19 @@ void SensorController::callback(bool running)
 
 void SensorController::Greedy()
 {
-    std::vector<Sensor *> sorted(sensors.size()+1);
+    std::vector<Sensor *> sorted(sensors.size());
     int maxnum=0;;
     int counter=0;
     cout<<"Test 1"<<endl;
+    find_all_intersections();
 
     for (auto it = sensors.begin(); it != sensors.end(); it++)
     {
-          (*it)->setoverlap(findOverlappingSensors(*it).size());
+          (*it)->setoverlap(findOverlappingSensors(*it).size()-1);
+          cout<<"Overlap First: "<<(*it)->overlap()<<endl;
           if((*it)->overlap() >maxnum)
               maxnum=(*it)->overlap();
+
     }
     cout<<"Test 2"<<endl;
     for(int i=0; i<=maxnum;i++)
@@ -328,25 +331,19 @@ void SensorController::Greedy()
         }
     }
     cout<<"Test 4"<<endl;
-    for(auto it=sorted.begin(); it!=sorted.end();it++)
-    {
-        if(is_sensor_redundant(*it)==false && (*it)->active()==false)
-            (*it)->activate();
-    }
+
+
 
     while(hasEnergy())
     {
-
-        for(auto it=sorted.begin(); it!=sorted.end();it++)
+        activate_all_sensors();
+        for(auto it=sorted.rbegin(); it!=sorted.rend();it++)
         {
-            if(is_sensor_redundant(*it)==false && (*it)->active()==false)
-                (*it)->activate();
+            if(is_sensor_redundant(*it)==true)
+                (*it)->deactivate();
         }
 
-        for (auto it = sorted.begin(); it != sorted.end(); it++)
-        {
-            --(*(*it));
-        }
+        discharge_all();
         callback(true);
     }
     callback(false);
