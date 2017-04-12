@@ -169,18 +169,19 @@ void SensorController::RandomTopDown()
 
 
     find_all_intersections();
-
+    activate_all_sensors();
     do
     {
-        activate_all_sensors();
+
         int randomNumber=rand() % sensors.size();
         if(is_sensor_redundant(sensors[randomNumber])==true)
             sensors[randomNumber]->deactivate();
         discharge_all();
-
+        if (!network_is_alive())
+            activate_all_sensors();
         callback(true);
 
-    }while(hasEnergy() && has_active() && network_is_alive());
+    }while(network_is_alive());
 
     callback(false);
 }
@@ -340,10 +341,10 @@ void SensorController::Greedy()
     cout<<"Test 4"<<endl;
 
 
-
+    activate_all_sensors();
     do
     {
-        activate_all_sensors();
+
         for(auto it=sorted.rbegin(); it!=sorted.rend();it++)
         {
             if(is_sensor_redundant(*it)==true)
@@ -351,8 +352,9 @@ void SensorController::Greedy()
         }
 
         discharge_all();
+        activate_all_sensors();
         callback(true);
-    } while ((hasEnergy() && network_is_alive() && has_active()));
+    } while ((network_is_alive()));
     callback(false);
 }
 
