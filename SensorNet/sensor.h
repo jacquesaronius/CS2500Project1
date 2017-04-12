@@ -9,6 +9,7 @@
             short m_y; // Y position of sensor
             short m_energy; // Current energy reserve
             bool m_active; // Active sensors status
+            int m_overlap; //How many sensors it overlaps with
             void init();
 
             Q_OBJECT
@@ -26,6 +27,8 @@
                 static const short RADIUS = 5; // Radius of sensor coverage
                 short x() const;
                 short y() const;
+                int overlap() const;
+                void setoverlap(const int a);
                 short energy() const;
                 bool active();
                 float area();

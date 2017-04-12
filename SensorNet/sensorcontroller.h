@@ -1,5 +1,6 @@
 #ifndef SENSORCONTROLLER_H
 #define SENSORCONTROLLER_H
+using namespace std;
 
 #include <QObject>
 #include <vector>
@@ -9,6 +10,7 @@
 #include "sensor.h"
 #include "intersectionpoint.h"
 #include "boundingbox.h"
+#include <iostream>
 #include <QDebug>
 #include <QThread>
 #include <QtConcurrent/QtConcurrent>
@@ -24,7 +26,8 @@ class SensorController : public QObject
 
 
 
-    std::vector <Sensor*> findOverlappingSensors(Sensor *a);
+    std::vector<Sensor *> findOverlappingSensors(Sensor *a);
+    int numOverlap(Sensor *a);
     bool hasEnergy();
     short m_rounds = 0;
     short m_delay = 0;
@@ -42,7 +45,7 @@ class SensorController : public QObject
                                   const short y,
                                   const short radius) const;
     void callback(bool);
-
+    void Greedy();
     void all_active();
     void find_all_intersections();
     void activate_all_sensors();

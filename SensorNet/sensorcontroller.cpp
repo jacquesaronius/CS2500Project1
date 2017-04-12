@@ -86,9 +86,9 @@ void SensorController::findIntersectionPoints(const Sensor *a, const Sensor* b)
 
 bool SensorController::ifOverlap(const Sensor *a, const int x, const int y)
 {
-    int distance=sqrt(pow((a->x() - x),2) + pow((a->y() - y), 2));
+    float distance=sqrt(static_cast<float>(pow((a->x() - x),2) + pow((a->y() - y), 2)));
 
-    if (distance < 2*(a->RADIUS))
+    if (distance < 2*(Sensor::RADIUS))
         return true;
     else
         return false;
@@ -120,6 +120,23 @@ std::vector <Sensor*> SensorController::findOverlappingSensors(Sensor *a)
             if(sensor_grid[i][j]!=NULL)
                 if(ifOverlap(a, i, j) == true)
                     Overlaps.push_back(sensor_grid[i][j]);
+        }
+    }
+    return Overlaps;
+}
+
+int SensorController::numOverlap(Sensor *a)
+{
+    BoundingBox Box=calc_bounding_box(a->x(), a->y(), 2*Sensor::RADIUS);
+    int Overlaps;
+
+    for(int i=Box.left; i<Box.right+1;i++)
+    {
+        for(int j=Box.top; j<Box.bottom+1; j++)
+        {
+            if(sensor_grid[i][j]!=NULL)
+                if(ifOverlap(a, i, j) == true)
+                    Overlaps++;
         }
     }
     return Overlaps;
@@ -213,24 +230,21 @@ void SensorController::run()
     }
     else if (m_mode == GREEDY)
     {
-        /* QtConcurrent::run(this, Greedy goes here) */;
+        QtConcurrent::run(this, SensorController::Greedy);
     }
 }
 
 bool SensorController::is_sensor_redundant(const Sensor * sensor) const
 {
     bool is_redundant = true;
-    auto box = calc_bounding_box(sensor->x(),
-                                 sensor->y(),
-                                 Sensor::RADIUS);
+    auto box = calc_bounding_box(sensor->x(), sensor->y(), Sensor::RADIUS);
 
     for (int i = box.left; i < box.right + 1 && is_redundant; i++)
     {
         for (int j = box.top; j < box.bottom + 1 && is_redundant; j++)
         {
-            auto it = intersections.begin();
 
-            for (; it != intersections.end() && is_redundant; it++)
+            for (auto it = intersections.begin(); it != intersections.end() && is_redundant; it++)
             {
                 is_redundant = (*it)->active_sensors_in_range() > 1;
             }
@@ -258,6 +272,60 @@ void SensorController::callback(bool running)
 
     }
 
+}
+
+void SensorController::Greedy()
+{
+    std::vector<Sensor *> sorted(sensors.size()+1);
+    int maxnum=0;;
+    int counter=0;
+    cout<<"Test 1"<<endl;
+
+    for (auto it = sensors.begin(); it != sensors.end(); it++)
+    {
+          (*it)->setoverlap(findOverlappingSensors(*it).size());
+          if((*it)->overlap() >maxnum)
+              maxnum=(*it)->overlap();
+    }
+    cout<<"Test 2"<<endl;
+    for(int i=0; i<=maxnum;i++)
+    {
+        for (auto it = sensors.begin(); it != sensors.end(); it++)
+        {
+            if((*it)->overlap()==i)
+            {
+                cout<<"Test 3"<<endl;
+                sorted[counter]= (*it);
+                counter++;
+                cout<<"NumOverlaps: "<<(*it)->overlap()<<endl;
+                cout<<"counter: "<<counter<<endl;
+            }
+
+        }
+    }
+    cout<<"Test 4"<<endl;
+    for(auto it=sorted.begin(); it!=sorted.end();it++)
+    {
+        if(is_sensor_redundant(*it)==false && (*it)->active()==false)
+            (*it)->activate();
+    }
+
+    while(hasEnergy())
+    {
+
+        for(auto it=sorted.begin(); it!=sorted.end();it++)
+        {
+            if(is_sensor_redundant(*it)==false && (*it)->active()==false)
+                (*it)->activate();
+        }
+
+        for (auto it = sorted.begin(); it != sorted.end(); it++)
+        {
+            --(*(*it));
+        }
+        callback(true);
+    }
+    callback(false);
 }
 
 void SensorController::all_active()
