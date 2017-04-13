@@ -38,9 +38,10 @@ class SensorController : public QObject
     QString m_status;
     std::vector<QString> reports;
     std::vector<Sensor *> sensors;
+    std::vector<Sensor *> active_sensors;
     std::vector<IntersectionPoint *> intersections;
     std::vector< std::vector< Sensor *> >  sensor_grid;
-    std::vector<Sensor *> pos_coverage(short x, short y);
+    std::vector<Sensor *> pos_coverage(short x, short y, bool first = 0);
     void add_intersection(short x, short y);
     BoundingBox calc_bounding_box(const short x,
                                   const short y,
@@ -49,6 +50,7 @@ class SensorController : public QObject
     void Greedy();
     void discharge_all();
 
+    void clear_intersections();
     void all_active();
     void find_all_intersections();
     void activate_all_sensors();

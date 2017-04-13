@@ -4,14 +4,6 @@ bool IntersectionPoint::add_sensor_in_range(Sensor * s)
 {
     float d;
 
-    auto it = sensors_in_range.find(s);
-
-
-    if (it != sensors_in_range.end())
-    {
-        return true;
-    }
-
     d = std::sqrt(pow(x() - s->x(), 2) + pow(y() - s->y(), 2));
 
     if (d < Sensor::RADIUS)

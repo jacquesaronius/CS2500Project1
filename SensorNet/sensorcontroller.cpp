@@ -16,7 +16,7 @@ bool SensorController::network_is_alive()
 
 void SensorController::discharge_all()
 {
-    for (auto it = sensors.begin(); it != sensors.end(); it++)
+    for (auto it = active_sensors.begin(); it != active_sensors.end(); it++)
     {
         --(*(*it));
     }
@@ -132,34 +132,24 @@ BoundingBox SensorController::calc_bounding_box(const short x,
 
 std::vector <Sensor*> SensorController::findOverlappingSensors(Sensor *a)
 {
-    BoundingBox Box=calc_bounding_box(a->x(), a->y(), 2*Sensor::RADIUS);
     std::vector <Sensor*> Overlaps;
 
-    for(int i=Box.left; i<Box.right+1;i++)
-    {
-        for(int j=Box.top; j<Box.bottom+1;j++)
-        {
-            if(sensor_grid[i][j]!=NULL)
-                if(ifOverlap(a, i, j) == true)
-                    Overlaps.push_back(sensor_grid[i][j]);
-        }
-    }
+    for (auto i = active_sensors.begin(); i != active_sensors.end(); i++)
+
+    if((*i)->active() && ifOverlap(a, (*i)->x(), (*i)->y()) == true)
+          Overlaps.push_back(*i);
+
     return Overlaps;
 }
 
 int SensorController::numOverlap(Sensor *a)
 {
-    BoundingBox Box=calc_bounding_box(a->x(), a->y(), 2*Sensor::RADIUS);
     int Overlaps;
 
-    for(int i=Box.left; i<Box.right+1;i++)
+    for (auto i = active_sensors.begin(); i != active_sensors.end(); i++)
     {
-        for(int j=Box.top; j<Box.bottom+1; j++)
-        {
-            if(sensor_grid[i][j]!=NULL)
-                if(ifOverlap(a, i, j) == true)
-                    Overlaps++;
-        }
+        if(ifOverlap(a, (*i)->x(), (*i)->y()) == true)
+            Overlaps++;
     }
     return Overlaps;
 }
@@ -168,14 +158,15 @@ void SensorController::RandomTopDown()
 {
 
 
-    find_all_intersections();
+
     activate_all_sensors();
     do
     {
 
-        int randomNumber=rand() % sensors.size();
-        if(is_sensor_redundant(sensors[randomNumber])==true)
-            sensors[randomNumber]->deactivate();
+        find_all_intersections();
+        int randomNumber=rand() % active_sensors.size();
+        if(is_sensor_redundant(active_sensors[randomNumber])==true)
+            active_sensors[randomNumber]->deactivate();
         discharge_all();
         if (!network_is_alive())
             activate_all_sensors();
@@ -198,9 +189,9 @@ void SensorController::RandomBottomUp()
             start_tracking_life = true;
         if (start_tracking_life)
             alive = network_is_alive();
-        int randomNumber=rand() % sensors.size();
-        if(is_sensor_redundant(sensors[randomNumber])==false)
-            sensors[randomNumber]->activate();
+        int randomNumber=rand() % active_sensors.size();
+        if(is_sensor_redundant(active_sensors[randomNumber])==false)
+            active_sensors[randomNumber]->activate();
         discharge_all();
         callback(true);
 
@@ -293,6 +284,8 @@ void SensorController::callback(bool running)
     {
         m_rounds++;
         update_all_reports();
+        m_status = QString("Simulation Started: %1 intersections created")
+                .arg(intersections.size());
         update();
         QThread::msleep(m_delay);
     }
@@ -308,51 +301,33 @@ void SensorController::callback(bool running)
 
 void SensorController::Greedy()
 {
-    std::vector<Sensor *> sorted(sensors.size());
-    int maxnum=0;;
-    int counter=0;
-    cout<<"Test 1"<<endl;
-    find_all_intersections();
-
-    for (auto it = sensors.begin(); it != sensors.end(); it++)
-    {
-          (*it)->setoverlap(findOverlappingSensors(*it).size());
-          cout<<"Overlap First: "<<(*it)->overlap()<<endl;
-          if((*it)->overlap() >maxnum)
-              maxnum=(*it)->overlap();
-
-    }
-    cout<<"Test 2"<<endl;
-    for(int i=0; i<=maxnum;i++)
-    {
-        for (auto it = sensors.begin(); it != sensors.end(); it++)
-        {
-            if((*it)->overlap()==i)
-            {
-                cout<<"Test 3"<<endl;
-                sorted[counter]= (*it);
-                counter++;
-                cout<<"NumOverlaps: "<<(*it)->overlap()<<endl;
-                cout<<"counter: "<<counter<<endl;
-            }
-
-        }
-    }
-    cout<<"Test 4"<<endl;
 
 
     activate_all_sensors();
     do
     {
-
-        for(auto it=sorted.rbegin(); it!=sorted.rend();it++)
+        short index = -1;
+        unsigned short max = 0;
+        find_all_intersections();
+        for (unsigned short i = 0; i < active_sensors.size(); i++)
         {
-            if(is_sensor_redundant(*it)==true)
-                (*it)->deactivate();
+            auto s = active_sensors[i];
+            if((s)->active() &&
+                    findOverlappingSensors(s).size() > max
+                    && is_sensor_redundant(s))
+            {
+                max = findOverlappingSensors(s).size();
+                index = i;
+            }
         }
-
+        if (index > -1 && max > 0)
+            active_sensors[index]->deactivate();
         discharge_all();
-        activate_all_sensors();
+        if (!network_is_alive())
+        {
+            activate_all_sensors();
+
+        }
         callback(true);
     } while ((network_is_alive()));
     callback(false);
@@ -360,10 +335,7 @@ void SensorController::Greedy()
 
 void SensorController::all_active()
 {
-    for (auto it = sensors.begin(); it != sensors.end(); it++)
-    {
-        (*it)->activate();
-    }
+    activate_all_sensors();
 
     while (hasEnergy())
     {
@@ -377,7 +349,7 @@ void SensorController::all_active()
 bool SensorController::has_active()
 {
     bool active = false;
-    for (auto it = sensors.begin(); it != sensors.end() && !active; it++)
+    for (auto it = active_sensors.begin(); it != active_sensors.end() && !active; it++)
     {
         active = (*it)->active();
     }
@@ -387,22 +359,29 @@ bool SensorController::has_active()
 
 void SensorController::find_all_intersections()
 {
-    for(auto i=sensors.begin(); i != sensors.end(); i++)
+    clear_intersections();
+    for(auto i=active_sensors.begin(); i != active_sensors.end(); i++)
     {
-        auto ov = findOverlappingSensors(*i);
-        for (auto j = ov.begin(); j != ov.end(); j++)
+        if ((*i)->active())
         {
-            findIntersectionPoints(*i, *j);
+            auto ov = findOverlappingSensors(*i);
+            for (auto j = ov.begin(); j != ov.end(); j++)
+            {
+                findIntersectionPoints(*i, *j);
+            }
         }
     }
 }
 
 void SensorController::activate_all_sensors()
 {
+    active_sensors.clear();
     for(auto i=sensors.begin(); i != sensors.end(); i++)
     {
 
         (*i)->activate();
+        if ((*i)->active())
+            active_sensors.push_back(*i);
     }
 
 }
@@ -516,40 +495,39 @@ void SensorController::write_all_reports()
     }
 }
 
-std::vector<Sensor *> SensorController::pos_coverage(short x, short y)
+std::vector<Sensor *> SensorController::pos_coverage(short x, short y, bool first)
 {
     std::vector<Sensor *> coverage;
-    auto box = calc_bounding_box(x, y, Sensor::RADIUS);
-    for (int i = box.left; i < box.right + 1; i++)
-        for (int j = box.top; j < box.bottom + 1; j++)
+    for (auto i = active_sensors.begin(); i != active_sensors.end(); i++)
+    {
+        auto s = (*i);
+        if (s->active())
         {
-            if (sensor_grid[i][j] != NULL)
+            int distance = sqrt(pow((s->x() - x),2) + pow((s->y() - y), 2));
+
+            if (distance < Sensor::RADIUS)
             {
-                auto s = sensor_grid[i][j];
-                int distance = sqrt(pow((s->x() - x),2) + pow((s->y() - y), 2));
-
-                if (distance < Sensor::RADIUS)
-                    coverage.push_back(s);
-
+                coverage.push_back(s);
+                if (first)
+                    return coverage;
             }
         }
+
+    }
     return coverage;
 }
 
 bool SensorController::pos_is_covered(short x, short y)
 {
-    auto box = calc_bounding_box(x,y, Sensor::RADIUS);
-    bool covered = false;
-    for (int i = box.left; i < box.right + 1 && !covered; i++)
-        for (int j = box.top; j < box.bottom + 1 && !covered; j++)
-        {
-            if (sensor_grid[i][j] != NULL && sensor_grid[i][j]->active())
-            {
-                auto s = sensor_grid[i][j];
-                int distance = sqrt(pow((s->x() - x),2) + pow((s->y() - y), 2));
+    return pos_coverage(x, y, true).size() > 0;
+}
 
-                covered = distance < Sensor::RADIUS;
-            }
-        }
-    return covered;
+void SensorController::clear_intersections()
+{
+    while (!intersections.empty())
+    {
+        auto p = intersections.back();
+        delete p;
+        intersections.pop_back();
+    }
 }
