@@ -1,5 +1,6 @@
         #ifndef SENSOR_H
         #define SENSOR_H
+        #define _USE_MATH_DEFINES
         #include <cstdlib>
         #include <cmath>
         #include <QObject>
